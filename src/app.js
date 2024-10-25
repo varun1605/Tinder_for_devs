@@ -15,4 +15,5 @@ app.use("/hello", (req, res) => {
 app.listen(7777, () => {
     console.log("Server running successfully on port 7777...");
 
-})  
+})
+console.log("Hi");
