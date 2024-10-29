@@ -2,18 +2,24 @@ const express = require("express")
 
 const app = express();
 
-app.use("/",(req, res) => {
-    res.send("Hello from the lol!")
+
+app.get("/user", (req, res) => {
+    res.send({
+        firstName: "Varun",
+        lastName: "Mangrulkar"
+    })
 })
-app.use("/test", (req, res) => {
-    res.send("Hello from the test!")
+
+app.post("/user", (req, res) => {
+    res.send("Data successfully posted to the database!")
 })
-app.use("/hello", (req, res) => {
-    res.send("Hello from the test!")
+app.delete("/user",(req,res)=>{
+    res.send("Data successfully deleted!")
 })
+
 
 app.listen(7777, () => {
     console.log("Server running successfully on port 7777...");
 
 })
-console.log("Hi");
+
