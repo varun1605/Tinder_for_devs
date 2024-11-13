@@ -36,10 +36,56 @@ app.get("/feed", async (req, res) => {
 app.post("/signup", async (req, res) => {
   const user = new User(req.body);
   try {
-    await user.save();
+    await user.save({ runValidators: true });
     res.send("data sent without an issue!");
   } catch (err) {
-    res.status(400).send("Error saving the User!!");
+    res.status(400).send(err.message);
+  }
+});
+
+// UPDATE API by ID
+
+app.patch("/user", async (req, res) => {
+  const userId = req.body._id;
+  const updatedUserData = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(userId, updatedUserData, {
+      runValidators: true,
+    });
+
+    res.send("User updated successfully");
+  } catch (err) {
+    res.status(404).send("Something went wrong!");
+  }
+});
+
+//UPDATE API by EmailId
+
+app.patch("/userUpdateByEmail", async (req, res) => {
+  const user = req.body.email;
+  const updatedUserEmail = req.body;
+
+  try {
+    const userUpdated = await User.findOneAndUpdate(
+      { email: user },
+      updatedUserEmail
+    );
+    res.send("user email updated");
+    console.log(userUpdated);
+  } catch (err) {
+    res.status(404).send("Something went wrong!!");
+  }
+});
+
+app.get("/getUserById", async (req, res) => {
+  const userById = req.body._id;
+
+  try {
+    const user = await User.findById(userById);
+    res.send(user);
+  } catch (err) {
+    res.status(404).send("Something went worng!!");
   }
 });
 
