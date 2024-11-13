@@ -45,18 +45,30 @@ app.post("/signup", async (req, res) => {
 
 // UPDATE API by ID
 
-app.patch("/user", async (req, res) => {
-  const userId = req.body._id;
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params.userId;
   const updatedUserData = req.body;
 
   try {
+    const skillsAllowedLength=updatedUserData.skills
+    if(skillsAllowedLength.length>5){
+      throw new Error("Skills cannot be more than 5")
+    }
+    
+    const ALLOWED_UPDATES = ["gender", "skills"];
+    const isAllowed = Object.keys(updatedUserData).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+    if (!isAllowed) {
+      throw new Error("Update not allowed");
+    }
     const user = await User.findByIdAndUpdate(userId, updatedUserData, {
       runValidators: true,
     });
 
     res.send("User updated successfully");
   } catch (err) {
-    res.status(404).send("Something went wrong!");
+    res.status(404).send("Something went wrong!"+ err.message);
   }
 });
 
