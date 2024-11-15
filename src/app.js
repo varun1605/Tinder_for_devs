@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const connectDb = require("./config/database");
 const User = require("./models/user");
+const { validateSignUp } = require("./utils/validation");
+const bcrypt = require("bcrypt");
 
 app.use(express.json());
 
@@ -23,6 +25,24 @@ app.get("/user", async (req, res) => {
   }
 });
 
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const userData = await User.findOne({ email: email });
+    if (!userData) {
+      throw new Error("Invalid credentials!!");
+    }
+    const isPasswordValid = await bcrypt.compare(password, userData.password);
+    if (isPasswordValid) {
+      res.send("Login successful!!!");
+    } else {
+      throw new Error("Invalid credentials!!");
+    }
+  } catch (err) {
+    res.status(404).send("ERROR: " + err.message);
+  }
+});
 app.get("/feed", async (req, res) => {
   try {
     const users = await User.find({});
@@ -34,10 +54,18 @@ app.get("/feed", async (req, res) => {
 });
 
 app.post("/signup", async (req, res) => {
-  const user = new User(req.body);
   try {
+    const { firstName, lastName, email, password } = req.body;
+    const hashPassword = await bcrypt.hash(password, 10);
+    validateSignUp(req);
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashPassword,
+    });
     await user.save({ runValidators: true });
-    res.send("data sent without an issue!");
+    res.send("Data sent successfully!");
   } catch (err) {
     res.status(400).send(err.message);
   }
@@ -50,11 +78,11 @@ app.patch("/user/:userId", async (req, res) => {
   const updatedUserData = req.body;
 
   try {
-    const skillsAllowedLength=updatedUserData.skills
-    if(skillsAllowedLength.length>5){
-      throw new Error("Skills cannot be more than 5")
+    const skillsAllowedLength = updatedUserData.skills;
+    if (skillsAllowedLength.length > 5) {
+      throw new Error("Skills cannot be more than 5");
     }
-    
+
     const ALLOWED_UPDATES = ["gender", "skills"];
     const isAllowed = Object.keys(updatedUserData).every((k) =>
       ALLOWED_UPDATES.includes(k)
@@ -68,25 +96,7 @@ app.patch("/user/:userId", async (req, res) => {
 
     res.send("User updated successfully");
   } catch (err) {
-    res.status(404).send("Something went wrong!"+ err.message);
-  }
-});
-
-//UPDATE API by EmailId
-
-app.patch("/userUpdateByEmail", async (req, res) => {
-  const user = req.body.email;
-  const updatedUserEmail = req.body;
-
-  try {
-    const userUpdated = await User.findOneAndUpdate(
-      { email: user },
-      updatedUserEmail
-    );
-    res.send("user email updated");
-    console.log(userUpdated);
-  } catch (err) {
-    res.status(404).send("Something went wrong!!");
+    res.status(404).send("Something went wrong!" + err.message);
   }
 });
 
