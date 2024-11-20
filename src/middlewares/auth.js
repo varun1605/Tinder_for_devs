@@ -12,7 +12,7 @@ const userAuth = async (req, res, next) => {
     const { _id } = decodedUser;
     const user = await User.findById(_id);
     if (!user) {
-      res.status(404).send("User not found!!!");
+      res.status(404).send("User not found");
     }
     req.user = user;
     next();

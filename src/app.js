@@ -19,15 +19,13 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid credentials!!");
     }
 
-    const isPasswordValid = await bcrypt.compare(password, userData.password);
+    const isPasswordValid = await userData.validatePassword(password);
     if (isPasswordValid) {
       //Only if the email and password is correct then only we will be able to get the userId, which later helps us to generate the jwt.
 
-      //Creating a JWT token
+      //Creating a JWT token inside the userSchema to keep the code clean and for the best practices.
 
-      const token = await jwt.sign({ _id: userData._id }, "DEV@Tinder@1234", {
-        expiresIn: "7d",
-      });
+      const token = await userData.getJWT();
 
       //generating a token indside a cookie.
       res.cookie("token", token);
