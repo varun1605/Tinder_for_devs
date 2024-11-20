@@ -8,24 +8,7 @@ const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 app.use(express.json());
 app.use(cookieParser());
-
-app.get("/user", async (req, res) => {
-  const userEmail = req.body.email;
-
-  try {
-    const user = await User.findOne({ email: userEmail });
-    user ? res.send(user) : res.status(404).send("User not found");
-
-    //     const user =await User.find({email:userEmail})
-    //     if(user.length===0){
-    //       res.status(404).send("User not found")
-    //     }else{
-    //       res.send(user)
-    //     }
-  } catch (err) {
-    res.status(400).send("Something went wrong!!");
-  }
-});
+const { userAuth } = require("./middlewares/auth");
 
 app.post("/login", async (req, res) => {
   try {
@@ -42,10 +25,11 @@ app.post("/login", async (req, res) => {
 
       //Creating a JWT token
 
-      const token = await jwt.sign({ _id: userData._id }, "DEV@Tinder@1234");
-      console.log(token);
+      const token = await jwt.sign({ _id: userData._id }, "DEV@Tinder@1234", {
+        expiresIn: "7d",
+      });
 
-      //generating a token indside a token.
+      //generating a token indside a cookie.
       res.cookie("token", token);
 
       res.send("Login successful!!!");
@@ -57,35 +41,13 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const cookie = req.cookies;
-
-    const { token } = cookie;
-
-    if (!token) {
-      throw new Error("Invalid token!!!");
-    }
-
-    const isTokenValid = await jwt.verify(token, "DEV@Tinder@1234");
-
-    const { _id } = isTokenValid;
-
-    const user = await User.findById(_id);
+    const user = req.user;
 
     res.send(user);
   } catch (err) {
     res.status(400).send("ERROR " + err.message);
-  }
-});
-
-app.get("/feed", async (req, res) => {
-  try {
-    const users = await User.find({});
-    console.log(users);
-    res.send(users);
-  } catch {
-    res.status(400).send("Something went wrong!!");
   }
 });
 
@@ -105,6 +67,11 @@ app.post("/signup", async (req, res) => {
   } catch (err) {
     res.status(400).send(err.message);
   }
+});
+
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+  const user = req.user;
+  res.send(`${user.firstName} sent the connection request!`);
 });
 
 // UPDATE API by ID
@@ -150,8 +117,8 @@ app.get("/getUserById", async (req, res) => {
 connectDb()
   .then(() => {
     console.log("Connection established successfully!!");
-    app.listen(7777, () => {
-      console.log("Server running successfully on port 7777...");
+    app.listen(8080, () => {
+      console.log("Server running successfully on port 8080...");
     });
   })
   .catch(() => {

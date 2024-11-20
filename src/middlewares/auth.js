@@ -1,14 +1,24 @@
-const authAdmin = (req, res, next) => {
-    console.log("This auth works well!");
+const jwt = require("jsonwebtoken");
+//const user = require("../models/user");
+const User = require("../models/user");
 
-    const token = "xyjjiz"
-    const isAuthorizedToken = token === "xyz";
-    if (!isAuthorizedToken) {
-        res.status(401).send("Unauthorized access!!")
+const userAuth = async (req, res, next) => {
+  try {
+    const { token } = req.cookies;
+    if (!token) {
+      res.status(400).send("Invalid token!!!");
     }
-    else {
-        next()
+    const decodedUser = await jwt.verify(token, "DEV@Tinder@1234");
+    const { _id } = decodedUser;
+    const user = await User.findById(_id);
+    if (!user) {
+      res.status(404).send("User not found!!!");
     }
-}
+    req.user = user;
+    next();
+  } catch (err) {
+    res.status(400).send("ERROR " + err.message);
+  }
+};
 
-module.exports=authAdmin
+module.exports = { userAuth };
