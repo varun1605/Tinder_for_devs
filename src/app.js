@@ -6,71 +6,75 @@ const { validateSignUp } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+
+const { userAuth } = require("./middlewares/auth");
+const authRouter = require("./Routes/auth");
+const profileRouter = require("./Routes/profile");
+const requestRouter = require("./Routes/request");
+
 app.use(express.json());
 app.use(cookieParser());
-const { userAuth } = require("./middlewares/auth");
 
-app.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
 
-    const userData = await User.findOne({ email: email });
-    if (!userData) {
-      throw new Error("Invalid credentials!!");
-    }
+// app.post("/login", async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
 
-    const isPasswordValid = await userData.validatePassword(password);
-    if (isPasswordValid) {
-      //Only if the email and password is correct then only we will be able to get the userId, which later helps us to generate the jwt.
+//     const userData = await User.findOne({ email: email });
+//     if (!userData) {
+//       throw new Error("Invalid credentials!!");
+//     }
 
-      //Creating a JWT token inside the userSchema to keep the code clean and for the best practices.
+//     const isPasswordValid = await userData.validatePassword(password);
+//     if (isPasswordValid) {
+//       //Only if the email and password is correct then only we will be able to get the userId, which later helps us to generate the jwt.
 
-      const token = await userData.getJWT();
+//       //Creating a JWT token inside the userSchema to keep the code clean and for the best practices.
 
-      //generating a token indside a cookie.
-      res.cookie("token", token);
+//       const token = await userData.getJWT();
 
-      res.send("Login successful!!!");
-    } else {
-      throw new Error("Invalid credentials!!");
-    }
-  } catch (err) {
-    res.status(404).send("ERROR: " + err.message);
-  }
-});
+//       //generating a token indside a cookie.
+//       res.cookie("token", token);
 
-app.get("/profile", userAuth, async (req, res) => {
-  try {
-    const user = req.user;
+//       res.send("Login successful!!!");
+//     } else {
+//       throw new Error("Invalid credentials!!");
+//     }
+//   } catch (err) {
+//     res.status(404).send("ERROR: " + err.message);
+//   }
+// });
 
-    res.send(user);
-  } catch (err) {
-    res.status(400).send("ERROR " + err.message);
-  }
-});
+// app.get("/profile", userAuth, async (req, res) => {
+//   try {
+//     const user = req.user;
 
-app.post("/signup", async (req, res) => {
-  try {
-    const { firstName, lastName, email, password } = req.body;
-    const hashPassword = await bcrypt.hash(password, 10);
-    validateSignUp(req);
-    const user = new User({
-      firstName,
-      lastName,
-      email,
-      password: hashPassword,
-    });
-    await user.save({ runValidators: true });
-    res.send("Data sent successfully!");
-  } catch (err) {
-    res.status(400).send(err.message);
-  }
-});
+//     res.send(user);
+//   } catch (err) {
+//     res.status(400).send("ERROR " + err.message);
+//   }
+// });
 
-app.post("/sendConnectionRequest", userAuth, async (req, res) => {
-  const user = req.user;
-  res.send(`${user.firstName} sent the connection request!`);
-});
+// app.post("/signup", async (req, res) => {
+//   try {
+//     const { firstName, lastName, email, password } = req.body;
+//     const hashPassword = await bcrypt.hash(password, 10);
+//     validateSignUp(req);
+//     const user = new User({
+//       firstName,
+//       lastName,
+//       email,
+//       password: hashPassword,
+//     });
+//     await user.save({ runValidators: true });
+//     res.send("Data sent successfully!");
+//   } catch (err) {
+//     res.status(400).send(err.message);
+//   }
+// });
 
 // UPDATE API by ID
 
@@ -98,17 +102,6 @@ app.patch("/user/:userId", async (req, res) => {
     res.send("User updated successfully");
   } catch (err) {
     res.status(404).send("Something went wrong!" + err.message);
-  }
-});
-
-app.get("/getUserById", async (req, res) => {
-  const userById = req.body._id;
-
-  try {
-    const user = await User.findById(userById);
-    res.send(user);
-  } catch (err) {
-    res.status(404).send("Something went worng!!");
   }
 });
 
