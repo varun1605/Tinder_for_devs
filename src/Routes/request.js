@@ -1,6 +1,7 @@
 const express = require("express");
 const { userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
+const User = require("../models/user");
 const requestRouter = express.Router();
 
 // requestRouter.post(
@@ -21,6 +22,18 @@ requestRouter.post(
 
       const toUserID = req.params.toUserID;
       const status = req.params.status;
+
+      const toUser = await User.findById(toUserID);
+      if (!toUser) {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
+      if (fromUserID == toUserID) {
+        return res.status(400).json({
+          message: "Cannot send the request to same user!",
+        });
+      }
 
       const allowedStatus = ["ignored", "interested"];
       if (!allowedStatus.includes(status)) {
@@ -45,10 +58,18 @@ requestRouter.post(
         status,
       });
       const data = await connectionData.save();
-      res.json({
-        message: "Connection request sent successfully!",
-        data,
-      });
+      if (status == "interested") {
+        res.json({
+          message: "Connection request sent successfully!",
+          data,
+        });
+      }
+      if (status == "ignored") {
+        res.json({
+          message: "Connection request ignored!",
+          data,
+        });
+      }
     } catch (err) {
       res.status(400).send("ERROR " + err.message);
     }
