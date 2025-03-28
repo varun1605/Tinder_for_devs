@@ -3,6 +3,7 @@ const { userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
 const requestRouter = express.Router();
+const mongoose = require("mongoose");
 
 // requestRouter.post(
 //   "/request/send/interested/:touserId",
@@ -75,5 +76,48 @@ requestRouter.post(
     }
   }
 );
+requestRouter.post(
+  "/request/review/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const { status, requestId } = req.params;
+      const loggedInUser = req.user;
 
+      /**check if the requestId exists in the database. 
+      As per the database that stores the requests, the loggedIn user in this case must be the to userId.
+      that means, when i request is send "to" a user, now that "to" user must be logged in order to accept or reject the request.
+      if the status is valid
+      the user who will perform the action for either accepting or rejecting the request shall be logged in. 
+      Also the status must be interested, so if a user ignores a profile then he cannot be there, that means, in case I ignores a profile of someone, 
+       he cannot take any action on it. 
+       */
+      const allowedStatus = ["accepted", "rejected"];
+      if (!allowedStatus.includes(status)) {
+        return res.status(400).json({ message: "Status not allowed!" });
+      }
+
+      const connectionRequest = await ConnectionRequest.findOne({
+        _id: requestId,
+        toUserID: loggedInUser._id,
+        status: "interested",
+      });
+      console.log("Data" + loggedInUser._id);
+
+      if (!connectionRequest) {
+        return res
+          .status(404)
+          .json({ message: "Connection request not found!" });
+      }
+
+      connectionRequest.status = status;
+
+      const data = await connectionRequest.save();
+
+      res.json({ message: "Connection request " + status, data });
+    } catch (err) {
+      res.status(400).json({ ERROR: err.message });
+    }
+  }
+);
 module.exports = requestRouter;
