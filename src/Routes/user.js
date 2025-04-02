@@ -51,6 +51,13 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
 
 userRouter.get("/user/feed", userAuth, async (req, res) => {
   try {
+    //Implementing pagination for organised results, making sure that in case there are tonns of objects, after the db call not all get displayed, it makes put extreme load on the computing
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    // "user/feed?page=1&limit=10" ==> show me first 10 results from the first page.
+    // "user/feed?page=2&limit=10" ==> show me the results from 11-20. and skip first 10 pages and so on...
+    const skip = (page - 1) * limit;
     const loggedInUser = req.user;
     const connectionRequests = await ConnectionRequest.find({
       $or: [
@@ -73,7 +80,10 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
         { _id: { $nin: Array.from(hideUserFromLoggedInUser) } },
         { _id: { $ne: loggedInUser._id } },
       ],
-    }).select(SAFE_DATA);
+    })
+      .select(SAFE_DATA)
+      .skip(skip)
+      .limit(limit);
 
     res.send(users);
   } catch (err) {
