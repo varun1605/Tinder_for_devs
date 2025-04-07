@@ -3,16 +3,19 @@ const app = express();
 const connectDb = require("./config/database");
 const User = require("./models/user");
 const { validateSignUp } = require("./utils/validation");
-const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
-
-const { userAuth } = require("./middlewares/auth");
 const authRouter = require("./Routes/auth");
 const profileRouter = require("./Routes/profile");
 const requestRouter = require("./Routes/request");
 const userRouter = require("./Routes/user");
+const cors = require("cors");
 
+const corsOptions = {
+  //Whitelisting the frontend domain URL to allow the cookies to be set.
+  origin: "http://localhost:5173",
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
