@@ -16,8 +16,10 @@ const validateUserEditData = (req) => {
     "firstName",
     "lastName",
     "password",
+    "age",
     "gender",
     "skills",
+    "photoURL",
   ];
 
   const validEditdKeys = Object.keys(req.body).every((field) =>

@@ -9,7 +9,9 @@ const profileRouter = require("./Routes/profile");
 const requestRouter = require("./Routes/request");
 const userRouter = require("./Routes/user");
 const cors = require("cors");
+const helmet = require("helmet");
 
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 const corsOptions = {
   //Whitelisting the frontend domain URL to allow the cookies to be set.
   origin: "http://localhost:5173",
@@ -30,11 +32,11 @@ app.patch("/user/:userId", async (req, res) => {
 
   try {
     const skillsAllowedLength = updatedUserData.skills;
-    if (skillsAllowedLength.length > 5) {
+    if (skillsAllowedLength.length > 50) {
       return res.status(400).send("Skills cannot be more than 5");
     }
 
-    const ALLOWED_UPDATES = ["gender", "skills"];
+    const ALLOWED_UPDATES = ["gender", "skills", "photoURL"];
     const isAllowed = Object.keys(updatedUserData).every((k) =>
       ALLOWED_UPDATES.includes(k)
     );

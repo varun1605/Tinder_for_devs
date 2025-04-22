@@ -45,6 +45,10 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "this-is-a-dummy-link-to-a-photo-URL",
     },
+    about: {
+      type: String,
+      default: "This is a dummy about of a user",
+    },
   },
   { timestamps: true }
 );
