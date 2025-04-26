@@ -19,6 +19,7 @@ const validateUserEditData = (req) => {
     "age",
     "gender",
     "skills",
+    "about",
     "photoURL",
   ];
 
