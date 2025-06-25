@@ -13,7 +13,13 @@ userRouter.get("/user/connections/requests", userAuth, async (req, res) => {
     const getMyRequests = await ConnectionRequest.find({
       toUserID: loggedInUser,
       status: "interested",
-    }).populate("fromUserID", ["firstName", "lastName", "photoURL", "skills"]);
+    }).populate("fromUserID", [
+      "firstName",
+      "lastName",
+      "photoURL",
+      "skills",
+      "about",
+    ]);
     res.json({ message: "Data fetched successfully!! ", data: getMyRequests });
   } catch (err) {
     res.status(400).json({ ERROR: err.message });
@@ -87,7 +93,7 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
 
     res.send(users);
   } catch (err) {
-    res.status(400).send({ message: err.message });
+    res.status(400).send({ message: err.message + " Please login" });
   }
 });
 

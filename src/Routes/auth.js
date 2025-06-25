@@ -23,7 +23,7 @@ authRouter.post("/login", async (req, res) => {
 
       const token = await userData.getJWT();
 
-      //generating a token indside a cookie.
+      //generating a token indside a cookie. 
       res.cookie("token", token);
 
       return res.send(userData);
@@ -51,8 +51,12 @@ authRouter.post("/signup", async (req, res) => {
       age,
       password: hashPassword,
     });
-    await user.save({ runValidators: true });
-    res.send("Data sent successfully!");
+    const savedUser = await user.save({ runValidators: true });
+    const token = await savedUser.getJWT();
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 8 * 3600000),
+    });
+    res.json({ message: "Data saved successfully!", savedUser });
   } catch (err) {
     res.status(400).send(err.message);
   }

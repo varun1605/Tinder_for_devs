@@ -20,6 +20,7 @@ requestRouter.post(
   async (req, res) => {
     try {
       const fromUserID = req.user._id;
+      const fromUserID_about = req.user.about;
 
       const toUserID = req.params.toUserID;
       const status = req.params.status;
@@ -57,6 +58,7 @@ requestRouter.post(
         fromUserID,
         toUserID,
         status,
+        fromUserID_about,
       });
       const data = await connectionData.save();
       if (status == "interested") {

@@ -19,6 +19,9 @@ const connectionRequest = new mongoose.Schema(
         values: ["interested", "ignored", "rejected", "accepted"],
         message: "{VALUE} is not supported!",
       },
+      about: {
+        type: String,
+      },
     },
   },
   { timestamps: true }
