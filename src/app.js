@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const connectDb = require("./config/database");
@@ -56,7 +57,7 @@ app.patch("/user/:userId", async (req, res) => {
 connectDb()
   .then(() => {
     console.log("Connection established successfully!!");
-    app.listen(8080, () => {
+    app.listen(process.env.PORT, () => {
       console.log("Server running successfully on port 8080...");
     });
   })
