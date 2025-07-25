@@ -11,6 +11,9 @@ const requestRouter = require("./Routes/request");
 const userRouter = require("./Routes/user");
 const cors = require("cors");
 const helmet = require("helmet");
+const http = require("http");
+const initilizeSocket = require("./utils/Socket");
+const chatRouter = require("./Routes/chat");
 
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 const corsOptions = {
@@ -18,6 +21,7 @@ const corsOptions = {
   origin: "http://localhost:5173",
   credentials: true,
 };
+
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
@@ -26,6 +30,10 @@ app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
+app.use("/", chatRouter);
+
+const server = http.createServer(app);
+initilizeSocket(server);
 
 app.patch("/user/:userId", async (req, res) => {
   const userId = req.params.userId;
@@ -57,7 +65,7 @@ app.patch("/user/:userId", async (req, res) => {
 connectDb()
   .then(() => {
     console.log("Connection established successfully!!");
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       console.log("Server running successfully on port 8080...");
     });
   })
